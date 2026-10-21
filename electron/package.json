@@ -1,0 +1,44 @@
+{
+  "name": "ai-copy-keeper",
+  "version": "1.0.0",
+  "description": "AI 对话格式复制工具 — 把 AI 回复的 Markdown 还原成带格式的富文本",
+  "main": "main.js",
+  "author": "AsaZhou",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.local.aicopykeeper",
+    "productName": "AI Copy Keeper",
+    "directories": {
+      "output": "../dist",
+      "buildResources": "resources"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "resources/icon.png"
+    },
+    "portable": {
+      "artifactName": "AI对话格式复制工具.exe"
+    },
+    "compression": "maximum"
+  },
+  "devDependencies": {
+    "electron": "^44.9.3",
+    "electron-builder": "^26.15.3"
+  }
+}

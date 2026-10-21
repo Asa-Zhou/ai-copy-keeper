@@ -1,0 +1,25 @@
+# ---------- 依赖 ----------
+node_modules/
+
+# ---------- 构建产物 ----------
+# exe / 安装包
+*.exe
+dist/
+
+# 由 tools/sync.py 从 src/index.html 生成，不要手改、不要提交
+electron/index.html
+
+# ---------- 历史打包残留（可手动删除） ----------
+out/
+out2/
+release/
+
+# ---------- 工具与系统 ----------
+.workbuddy/
+__pycache__/
+*.pyc
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.log

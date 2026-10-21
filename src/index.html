@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 对话格式复制工具</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:#f4f6f8;color:#1f2328;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+  .app{height:100%;display:flex;flex-direction:column}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 20px;background:#fff;border-bottom:1px solid #e3e6ea;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#4b8bf5,#2563eb);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;letter-spacing:-.3px}
+  .brand h1{margin:0;font-size:15.5px;font-weight:600;letter-spacing:.2px}
+  .brand p{margin:2px 0 0;font-size:12px;color:#6b7280}
+  .actions{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{border:1px solid #d6dae0;background:#fff;color:#24292f;font-size:13px;padding:8px 13px;border-radius:8px;cursor:pointer;transition:background .15s,border-color .15s;font-family:inherit;white-space:nowrap}
+  .btn:hover{background:#f3f5f7;border-color:#c3c9d1}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:#2563eb;border-color:#2563eb;color:#fff;font-weight:600;box-shadow:0 1px 2px rgba(37,99,235,.28)}
+  .btn.primary:hover{background:#1d4ed8;border-color:#1d4ed8}
+  .btn.ghost{color:#6b7280}
+
+  .panes{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px;min-height:0}
+  .pane{background:#fff;border:1px solid #e3e6ea;border-radius:12px;display:flex;flex-direction:column;min-height:0;overflow:hidden;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .pane-head{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid #eef1f4;font-size:12.5px;color:#4b5563;background:#fafbfc}
+  .tag{font-size:11px;padding:2px 8px;border-radius:20px;background:#eef1f5;color:#5b6472}
+  .tag.ok{background:#e7f6ec;color:#1a7f37}
+  textarea{flex:1;border:0;outline:0;resize:none;padding:16px 18px;font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:13px;line-height:1.72;color:#24292f;background:#fff}
+  textarea::placeholder{color:#aab2bd}
+  .pane-body{flex:1;overflow:auto;padding:22px 26px}
+  .empty-hint{display:none;color:#b3bcc7;font-size:13px;text-align:center;padding:70px 20px;line-height:1.9;user-select:none}
+
+  .md-body{font-size:15px;line-height:1.78;color:#1f2328;word-wrap:break-word}
+  .md-body>*:first-child{margin-top:0}
+  .md-body h1,.md-body h2,.md-body h3,.md-body h4,.md-body h5,.md-body h6{font-weight:600;line-height:1.35;margin:26px 0 12px}
+  .md-body h1{font-size:25px;padding-bottom:8px;border-bottom:1px solid #e6e9ee}
+  .md-body h2{font-size:21px;padding-bottom:7px;border-bottom:1px solid #eef1f4}
+  .md-body h3{font-size:18px}
+  .md-body h4{font-size:16px}
+  .md-body h5,.md-body h6{font-size:14.5px;color:#57606a}
+  .md-body p{margin:0 0 14px}
+  .md-body strong{font-weight:700}
+  .md-body em{font-style:italic}
+  .md-body del{color:#8b949e}
+  .md-body mark{background:#fff3b8;padding:0 2px}
+  .md-body a{color:#2563eb;text-decoration:none}
+  .md-body ul,.md-body ol{margin:0 0 14px;padding-left:26px}
+  .md-body li{margin:5px 0}
+  .md-body li>ul,.md-body li>ol{margin:5px 0 0}
+  .md-body blockquote{margin:0 0 14px;padding:10px 16px;border-left:3px solid #93b4f7;background:#f6f9ff;color:#374151}
+  .md-body blockquote p:last-child{margin-bottom:0}
+  .md-body code{font-family:ui-monospace,Consolas,"Cascadia Mono",monospace;font-size:12.8px;background:#f1f3f6;border:1px solid #e4e8ee;border-radius:4px;padding:1px 5px;color:#b4443a}
+  .md-body .code-block{margin:0 0 16px;background:#282c34;border:1px solid #1b1f26;border-radius:10px;overflow:hidden}
+  .md-body li .code-block{margin:8px 0 6px}
+  .md-body .code-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:26px;padding:2px 8px 2px 14px;background:#21252b;border-bottom:1px solid #1b1f26}
+  .md-body .code-lang{font-family:ui-monospace,Consolas,"Cascadia Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.07em;color:#7d8899;text-transform:lowercase}
+  .md-body .code-copy{appearance:none;border:1px solid #39404c;background:transparent;color:#9aa5b6;font-family:inherit;font-size:11px;line-height:1.6;padding:1px 8px;border-radius:5px;cursor:pointer;opacity:0;transition:opacity .15s,background .15s,color .15s}
+  .md-body .code-block:hover .code-copy{opacity:1}
+  .md-body .code-copy:hover{background:#333a46;color:#e6edf3;border-color:#4b5462}
+  .md-body pre{margin:0;padding:11px 16px 13px;background:transparent;border:0;border-radius:0;overflow:auto}
+  .md-body pre code{background:none;border:0;padding:0;color:#abb2bf;font-size:12.8px;line-height:1.68;white-space:pre}
+  .tk-kw{color:#c678dd}
+  .tk-st{color:#98c379}
+  .tk-cm{color:#7b8798;font-style:italic}
+  .tk-nu{color:#d19a66}
+  .tk-fn{color:#61afef}
+  .tk-vr{color:#e5c07b}
+  /* 办公模式：浅色代码块。OneNote / 邮件客户端不认块级背景，深色底会整块消失 */
+  .md-body.code-light .code-block{background:#f6f8fa;border-color:#d0d7de}
+  .md-body.code-light .code-bar{background:#eef1f4;border-bottom-color:#d0d7de}
+  .md-body.code-light .code-lang{color:#6e7781}
+  .md-body.code-light .code-copy{color:#57606a;border-color:#d0d7de}
+  .md-body.code-light .code-copy:hover{background:#e5e9ee;color:#24292f;border-color:#b9c1ca}
+  .md-body.code-light pre code{color:#24292f}
+  .md-body.code-light .tk-kw{color:#cf222e}
+  .md-body.code-light .tk-st{color:#0a3069}
+  .md-body.code-light .tk-cm{color:#6e7781}
+  .md-body.code-light .tk-nu{color:#0550ae}
+  .md-body.code-light .tk-fn{color:#8250df}
+  .md-body.code-light .tk-vr{color:#953800}
+  .md-body table{border-collapse:collapse;width:100%;margin:0 0 16px;font-size:14px}
+  .md-body th,.md-body td{border:1px solid #dfe3e8;padding:8px 12px;vertical-align:top}
+  .md-body th{background:#f4f6f9;font-weight:600;text-align:left}
+  .md-body tbody tr:nth-child(even){background:#fafbfc}
+  .md-body hr{border:0;border-top:1px solid #e6e9ee;margin:22px 0}
+  .md-body img{max-width:100%;border-radius:6px}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,18px);background:#111827;color:#fff;font-size:13px;padding:10px 18px;border-radius:9px;opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;box-shadow:0 8px 22px rgba(0,0,0,.22);max-width:70vw}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  .footbar{display:flex;gap:8px 22px;align-items:center;padding:0 20px 12px;font-size:11.5px;color:#8b949e;flex-wrap:wrap;line-height:1.6}
+  .footbar b{color:#5b6472;font-weight:600}
+  .footbar span{white-space:nowrap}
+  .footbar .opt{display:inline-flex;align-items:center;gap:5px;cursor:pointer;color:#41505f;white-space:nowrap;user-select:none;padding:2px 8px;border:1px solid #e1e5ea;border-radius:20px;background:#fbfcfd}
+  .footbar .opt:hover{border-color:#c9d1da;background:#f5f7f9}
+  .footbar .opt input{accent-color:#2563eb;cursor:pointer;margin:0;width:13px;height:13px}
+  .footbar .author{margin-left:auto;color:#8d97a4;font-weight:600;letter-spacing:.03em}
+
+  @media (max-width:980px){
+    .panes{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+    .brand p{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">MD</div>
+      <div>
+        <h1>AI 对话格式复制工具</h1>
+        <p>把 AI 回复的 Markdown 源码，还原成带标题/表格/加粗的富文本</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="btnPaste">读取剪贴板</button>
+      <button class="btn primary" id="btnCopyRich">复制富文本</button>
+      <button class="btn" id="btnCopyText">复制纯文本</button>
+      <button class="btn" id="btnDoc">存为 Word</button>
+      <button class="btn" id="btnImg">存为图片</button>
+      <button class="btn ghost" id="btnClear">清空</button>
+    </div>
+  </header>
+
+  <main class="panes">
+    <section class="pane">
+      <div class="pane-head"><span>① 粘贴 AI 回复原文（Markdown 源码）</span><span class="tag">纯文本</span></div>
+      <textarea id="src" spellcheck="false" placeholder="在 AI 网页里 Ctrl+A / 选中回复 → Ctrl+C，然后点这里 Ctrl+V"></textarea>
+    </section>
+    <section class="pane">
+      <div class="pane-head"><span>② 预览效果</span><span class="tag ok">富文本</span></div>
+      <div class="pane-body"><div id="emptyHint" class="empty-hint" style="display:block">左侧粘贴 AI 回复，这里会实时显示带格式的效果</div><div id="preview" class="md-body"></div></div>
+    </section>
+  </main>
+
+  <div class="footbar">
+    <span><b>复制富文本</b> → 粘到 Word / 邮件 / 腾讯文档 / 飞书 / 语雀，格式完整保留</span>
+    <span><b>微信聊天框</b>只吃纯文本 → 请用「存为图片」或「存为 Word」发送</span>
+    <span><b>Ctrl+Enter</b> 快速复制</span>
+    <label class="opt"><input type="checkbox" id="officeMode"> 代码块用浅色（粘 OneNote 用）</label>
+    <span class="author">by AsaZhou</span>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var src = document.getElementById('src');
+  var preview = document.getElementById('preview');
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+
+  /* 办公模式：代码块输出成浅色表格，兼容 OneNote / 邮件客户端 */
+  var officeMode = false;
+  try{ officeMode = window.localStorage.getItem('aick_office') === '1'; }catch(e){ officeMode = false; }
+
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, 2200);
+  }
+
+  /* ---------------- Markdown 解析 ---------------- */
+
+  function esc(s){
+    return String(s)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  function inline(text){
+    var codes = [];
+    var s = String(text).replace(/`([^`\n]+)`/g, function(m, c){
+      codes.push(c);
+      return '\u0000C' + (codes.length - 1) + '\u0000';
+    });
+
+    s = esc(s);
+
+    s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+&quot;[^&]*&quot;)?\)/g,
+      '<img src="$2" alt="$1">');
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+&quot;[^&]*&quot;)?\)/g,
+      '<a href="$2">$1</a>');
+
+    s = s.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/___(.+?)___/g, '<strong><em>$1</em></strong>');
+    s = s.replace(/__(.+?)__/g, '<strong>$1</strong>');
+    s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+    s = s.replace(/(^|[^_\w])_([^_\n]+)_(?!_)/g, '$1<em>$2</em>');
+    s = s.replace(/~~(.+?)~~/g, '<del>$1</del>');
+    s = s.replace(/==(.+?)==/g, '<mark>$1</mark>');
+
+    s = s.replace(/\u0000C(\d+)\u0000/g, function(m, i){
+      return '<code>' + esc(codes[Number(i)]) + '</code>';
+    });
+
+    return s.replace(/\n/g, '<br>');
+  }
+
+  /* ---------------- 代码块：深色卡片 + 轻量语法高亮 ---------------- */
+
+  var LANG_ALIAS = {
+    js: 'js', javascript: 'js', jsx: 'js', ts: 'js', typescript: 'js', tsx: 'js',
+    py: 'py', python: 'py', python3: 'py',
+    sh: 'bash', bash: 'bash', shell: 'bash', zsh: 'bash', console: 'bash', powershell: 'bash', ps1: 'bash',
+    c: 'c', h: 'c', cpp: 'c', cc: 'c', hpp: 'c', ino: 'c',
+    json: 'json',
+    sql: 'sql', mysql: 'sql'
+  };
+
+  var SYNTAX = {
+    bash: {
+      kw: ['if','then','else','elif','fi','for','while','until','do','done','case','esac','function','in','return','exit','export','local','readonly','unset','source','alias','set','trap','shift','eval',
+        'cd','ls','pwd','echo','printf','cat','grep','egrep','sed','awk','find','xargs','cp','mv','rm','mkdir','rmdir','touch','chmod','chown','ln','tar','zip','unzip','curl','wget',
+        'git','npm','npx','pnpm','yarn','pip','pip3','python','python3','node','make','cmake','gcc','ssh','scp','rsync','docker','systemctl','apt','apt-get','yum','brew','sudo','su',
+        'kill','ps','top','df','du','mount','which','whereis','man','head','tail','less','more','wc','sort','uniq','cut','tr','diff','patch','bash','sh','zsh','vim','nano'],
+      hashComment: true, dollarVar: true
+    },
+    py: {
+      kw: ['def','class','return','if','elif','else','for','while','in','not','and','or','is','None','True','False','import','from','as','with','try','except','finally','raise','pass','break','continue','lambda','yield','global','nonlocal','assert','del','async','await',
+        'print','len','range','enumerate','zip','open','int','str','float','list','dict','set','tuple','type','super','self','__init__','__name__'],
+      hashComment: true
+    },
+    js: {
+      kw: ['var','let','const','function','return','if','else','for','while','do','switch','case','break','continue','new','this','class','extends','super','try','catch','finally','throw','typeof','instanceof','in','of','delete','void','yield','async','await','import','export','default','from','null','undefined','true','false','NaN'],
+      slashComment: true, blockComment: true
+    },
+    c: {
+      kw: ['int','char','float','double','void','long','short','unsigned','signed','const','static','extern','volatile','struct','union','enum','typedef','sizeof','return','if','else','for','while','do','switch','case','break','continue','goto','default','NULL','true','false',
+        'uint8_t','uint16_t','uint32_t','uint64_t','int8_t','int16_t','int32_t','int64_t','size_t','bool','HAL_StatusTypeDef'],
+      slashComment: true, blockComment: true
+    },
+    json: { kw: ['true','false','null'], slashComment: true },
+    sql: {
+      kw: ['select','from','where','insert','into','values','update','set','delete','create','table','alter','drop','index','view','join','left','right','inner','outer','on','group','by','order','having','limit','offset','as','and','or','not','null','primary','key','foreign','references','unique','distinct','count','sum','avg','max','min','union','all','in','exists','between','like'],
+      dashComment: true, caseInsensitive: true
+    }
+  };
+
+  function escRe(s){
+    return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  (function compileSyntax(){
+    for(var name in SYNTAX){
+      if(!Object.prototype.hasOwnProperty.call(SYNTAX, name)) continue;
+      var cfg = SYNTAX[name];
+      var cmt = [];
+      if(cfg.hashComment) cmt.push('#[^\\n]*');
+      if(cfg.slashComment) cmt.push('//[^\\n]*');
+      if(cfg.dashComment) cmt.push('--[^\\n]*');
+      if(cfg.blockComment) cmt.push('/\\*[\\s\\S]*?\\*/');
+      var cmtAlt = cmt.length ? cmt.join('|') : '(?!)';
+      var kwAlt = (cfg.kw && cfg.kw.length) ? cfg.kw.map(escRe).join('|') : '(?!)';
+      var varAlt = cfg.dollarVar ? '\\$[A-Za-z_][A-Za-z0-9_]*' : '(?!)';
+      var strAlt = '"(?:[^"\\\\\\n]|\\\\.)*"' +
+                   '|\'(?:[^\'\\\\\\n]|\\\\.)*\'' +
+                   '|`(?:[^`\\\\]|\\\\.)*`';
+      var src = '(' + cmtAlt + ')' +
+                '|(' + strAlt + ')' +
+                '|(\\b0[xX][0-9a-fA-F]+\\b|\\b\\d+(?:\\.\\d+)?\\b)' +
+                '|(\\b(?:' + kwAlt + ')\\b)' +
+                '|([A-Za-z_$][A-Za-z0-9_$]*)(?=\\s*\\()' +
+                '|(' + varAlt + ')';
+      cfg.re = new RegExp(src, cfg.caseInsensitive ? 'gi' : 'g');
+    }
+  })();
+
+  function highlightCode(code, lang){
+    var cfg = SYNTAX[lang];
+    if(!cfg || !cfg.re) return esc(code);
+    var re = cfg.re;
+    re.lastIndex = 0;
+    var out = '';
+    var last = 0;
+    var m;
+    while((m = re.exec(code)) !== null){
+      if(m[0] === ''){ re.lastIndex++; continue; }
+      if(m.index > last) out += esc(code.slice(last, m.index));
+      var cls = m[1] ? 'cm' : m[2] ? 'st' : m[3] ? 'nu' : m[4] ? 'kw' : m[5] ? 'fn' : 'vr';
+      out += '<span class="tk-' + cls + '">' + esc(m[0]) + '</span>';
+      last = m.index + m[0].length;
+    }
+    out += esc(code.slice(last));
+    return out;
+  }
+
+  function codeBlock(code, rawLang){
+    var label = String(rawLang || '').trim().toLowerCase();
+    var lang = LANG_ALIAS[label] || '';
+    var body = lang ? highlightCode(code, lang) : esc(code);
+    return '<div class="code-block">' +
+      '<div class="code-bar">' +
+        '<span class="code-lang">' + esc(label || 'code') + '</span>' +
+        '<button class="code-copy" type="button">复制</button>' +
+      '</div>' +
+      '<pre><code>' + body + '</code></pre>' +
+    '</div>';
+  }
+
+  function isTableSep(line){
+    return /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)+\|?\s*$/.test(line);
+  }
+
+  function splitRow(line){
+    var s = line.trim().replace(/\\\|/g, '\u0000P');
+    if(s.charAt(0) === '|') s = s.slice(1);
+    if(s.charAt(s.length - 1) === '|') s = s.slice(0, -1);
+    return s.split('|').map(function(c){ return c.replace(/\u0000P/g, '|').trim(); });
+  }
+
+  function buildTable(head, aligns, rows){
+    var out = '<table><thead><tr>';
+    var k;
+    for(k = 0; k < head.length; k++){
+      out += '<th' + (aligns[k] ? ' style="text-align:' + aligns[k] + '"' : '') + '>' + inline(head[k]) + '</th>';
+    }
+    out += '</tr></thead><tbody>';
+    for(var r = 0; r < rows.length; r++){
+      out += '<tr>';
+      for(k = 0; k < head.length; k++){
+        out += '<td' + (aligns[k] ? ' style="text-align:' + aligns[k] + '"' : '') + '>' + inline(rows[r][k] || '') + '</td>';
+      }
+      out += '</tr>';
+    }
+    out += '</tbody></table>';
+    return out;
+  }
+
+  function indentOf(line){
+    var m = line.match(/^[ \t]*/)[0];
+    return m.replace(/\t/g, '    ').length;
+  }
+
+  function isListMark(line){
+    return /^[ \t]*([-*+]|\d+[.)])\s+/.test(line);
+  }
+
+  function parseListBlock(lines, start){
+    var base = indentOf(lines[start]);
+    var ordered = /^[ \t]*\d+[.)]\s+/.test(lines[start]);
+    var items = [];
+    var cur = null;
+    var i = start;
+
+    while(i < lines.length){
+      var l = lines[i];
+      if(!l.trim()){
+        var j = i + 1;
+        while(j < lines.length && !lines[j].trim()) j++;
+        if(j < lines.length && indentOf(lines[j]) >= base && isListMark(lines[j])){
+          i = j; continue;
+        }
+        break;
+      }
+      var ind = indentOf(l);
+      if(ind < base) break;
+
+      var m = l.match(/^[ \t]*([-*+]|\d+[.)])\s+([\s\S]*)$/);
+      if(m){
+        var isOrd = /^[ \t]*\d+[.)]\s+/.test(l);
+        if(ind <= base + 1){
+          if(isOrd !== ordered) break;
+          cur = { text: m[2], subs: [] };
+          items.push(cur);
+          i++;
+        } else {
+          var sub = parseListBlock(lines, i);
+          if(sub[1] <= i){ i++; break; }
+          if(cur) cur.subs.push(sub[0]);
+          i = sub[1];
+        }
+      } else if(/^[ \t]*(`{3,}|~{3,})/.test(l)){
+        /* 列表项内缩进的代码块（AI 回复里极常见，之前被当续行吞掉了） */
+        var fm = l.match(/^([ \t]*)(`{3,}|~{3,})([\s\S]*)$/);
+        var fIndent = fm[1].replace(/\t/g, '    ').length;
+        var fChar = fm[2].charAt(0);
+        var fLen = fm[2].length;
+        var fLang = (fm[3] || '').trim();
+        var fClose = new RegExp('^[ \\t]*' + (fChar === '`' ? '`' : '~') + '{' + fLen + ',}[ \\t]*$');
+        var cbuf = [];
+        i++;
+        while(i < lines.length && !fClose.test(lines[i])){
+          cbuf.push(lines[i].replace(new RegExp('^[ \\t]{0,' + fIndent + '}'), ''));
+          i++;
+        }
+        i++;
+        if(cur) cur.subs.push(codeBlock(cbuf.join('\n'), fLang));
+        continue;
+      } else {
+        if(ind <= base) break;           /* 同级普通行：列表结束，交回外层 */
+        if(cur){ cur.text += '\n' + l.trim(); i++; }
+        else break;
+      }
+    }
+
+    var html = ordered ? '<ol>' : '<ul>';
+    for(var n = 0; n < items.length; n++){
+      var t = items[n].text;
+      var box = '';
+      var tm = t.match(/^\[([ xX])\]\s+([\s\S]*)$/);
+      if(tm){
+        box = (tm[1].toLowerCase() === 'x' ? '☑ ' : '☐ ');
+        t = tm[2];
+      }
+      html += '<li>' + box + inline(t) + items[n].subs.join('') + '</li>';
+    }
+    html += ordered ? '</ol>' : '</ul>';
+    return [html, i];
+  }
+
+  function isBlockStart(line){
+    var t = line.replace(/\s+$/, '');
+    if(/^\s*(`{3,}|~{3,})/.test(t)) return true;
+    if(/^\s{0,3}#{1,6}\s+/.test(t)) return true;
+    if(/^\s*>/.test(t)) return true;
+    if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(t)) return true;
+    if(isListMark(t)) return true;
+    return false;
+  }
+
+  function parseBlocks(lines){
+    var out = '';
+    var i = 0;
+    while(i < lines.length){
+      var raw = lines[i];
+      var line = raw.replace(/\s+$/, '');
+
+      if(!line.trim()){ i++; continue; }
+
+      var m = line.match(/^(\s*)(`{3,}|~{3,})(.*)$/);
+      if(m){
+        var fenceChar = m[2].charAt(0);
+        var fenceLen = m[2].length;
+        var fenceLang = (m[3] || '').trim();
+        var closeRe = new RegExp('^\\s*' + (fenceChar === '`' ? '`' : '~') + '{' + fenceLen + ',}\\s*$');
+        var buf = [];
+        i++;
+        while(i < lines.length && !closeRe.test(lines[i])){ buf.push(lines[i]); i++; }
+        i++;
+        out += codeBlock(buf.join('\n'), fenceLang);
+        continue;
+      }
+
+      if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)){ out += '<hr>'; i++; continue; }
+
+      m = line.match(/^\s{0,3}(#{1,6})\s+(.*?)\s*#*\s*$/);
+      if(m){
+        var lv = m[1].length;
+        out += '<h' + lv + '>' + inline(m[2]) + '</h' + lv + '>';
+        i++; continue;
+      }
+
+      if(line.indexOf('|') >= 0 && i + 1 < lines.length && isTableSep(lines[i + 1])){
+        var head = splitRow(line);
+        var aligns = splitRow(lines[i + 1]).map(function(c){
+          var t = c.trim();
+          if(/^:.*:$/.test(t)) return 'center';
+          if(/^:/.test(t)) return 'left';
+          if(/:$/.test(t)) return 'right';
+          return '';
+        });
+        i += 2;
+        var rows = [];
+        while(i < lines.length && lines[i].trim() && lines[i].indexOf('|') >= 0){
+          rows.push(splitRow(lines[i]));
+          i++;
+        }
+        out += buildTable(head, aligns, rows);
+        continue;
+      }
+
+      if(/^\s*>/.test(line)){
+        var qbuf = [];
+        while(i < lines.length && /^\s*>/.test(lines[i])){
+          qbuf.push(lines[i].replace(/^\s*>\s?/, ''));
+          i++;
+        }
+        out += '<blockquote>' + parseBlocks(qbuf) + '</blockquote>';
+        continue;
+      }
+
+      if(isListMark(raw)){
+        var lb = parseListBlock(lines, i);
+        out += lb[0];
+        if(lb[1] <= i) i++; else i = lb[1];
+        continue;
+      }
+
+      var pbuf = [];
+      while(i < lines.length && lines[i].trim() && !isBlockStart(lines[i])){
+        if(lines[i].indexOf('|') >= 0 && i + 1 < lines.length && isTableSep(lines[i + 1])) break;
+        pbuf.push(lines[i].trim());
+        i++;
+      }
+      if(pbuf.length) out += '<p>' + inline(pbuf.join('\n')) + '</p>';
+      else i++;
+    }
+    return out;
+  }
+
+  function renderMarkdown(md){
+    return parseBlocks(String(md).replace(/\r\n?/g, '\n').split('\n'));
+  }
+
+  /* ---------------- 样式内联（保证粘到 Word/微信后不变形） ---------------- */
+
+  var PROPS = [
+    'color','background-color','font-family','font-size','font-weight','font-style',
+    'text-decoration','text-align','line-height','letter-spacing','vertical-align',
+    'white-space','padding-top','padding-right','padding-bottom','padding-left',
+    'margin-top','margin-right','margin-bottom','margin-left',
+    'border-top-width','border-top-style','border-top-color',
+    'border-right-width','border-right-style','border-right-color',
+    'border-bottom-width','border-bottom-style','border-bottom-color',
+    'border-left-width','border-left-style','border-left-color',
+    'border-collapse','border-spacing','border-radius','list-style-type','max-width'
+  ];
+
+  var INHERIT = {
+    'color': 1, 'font-family': 1, 'font-size': 1, 'font-weight': 1, 'font-style': 1,
+    'line-height': 1, 'letter-spacing': 1, 'text-align': 1, 'white-space': 1, 'list-style-type': 1
+  };
+
+  function inlineStyles(root){
+    var els = [root].concat(Array.prototype.slice.call(root.querySelectorAll('*')));
+    for(var n = 0; n < els.length; n++){
+      var el = els[n];
+      if(!el || el.nodeType !== 1) continue;
+      var cs = window.getComputedStyle(el);
+      var parent = el.parentElement;
+      var pcs = (parent && parent.nodeType === 1 && el !== root) ? window.getComputedStyle(parent) : null;
+      var isTable = el.tagName === 'TABLE';
+      var sides = ['top', 'right', 'bottom', 'left'];
+      var thin = {};
+      for(var s = 0; s < 4; s++){
+        thin[sides[s]] = parseFloat(cs.getPropertyValue('border-' + sides[s] + '-width')) > 0;
+      }
+      var css = '';
+      for(var p = 0; p < PROPS.length; p++){
+        var name = PROPS[p];
+        var v = cs.getPropertyValue(name);
+        if(!v) continue;
+        if(name === 'text-decoration' && /^none\b/.test(v) && el.tagName !== 'DEL') continue;
+        if(name === 'letter-spacing' && v === 'normal') continue;
+        if(name === 'max-width' && v === 'none') continue;
+        if(name === 'background-color' && (v === 'rgba(0, 0, 0, 0)' || v === 'transparent')) continue;
+        if(name === 'vertical-align' && v === 'baseline') continue;
+        if(name === 'border-radius' && v === '0px') continue;
+        if((name === 'border-collapse' || name === 'border-spacing') && !isTable) continue;
+        if(/^border-(top|right|bottom|left)-(color|style)$/.test(name) && !thin[name.split('-')[1]]) continue;
+        if(name === 'list-style-type' && el.tagName !== 'UL' && el.tagName !== 'OL' && el.tagName !== 'LI') continue;
+        // 继承属性与父元素一致时不重复写，压缩体积
+        if(INHERIT[name] && pcs && pcs.getPropertyValue(name) === v) continue;
+        // 属性值里不能出现双引号，否则会截断 style 属性
+        if(name === 'font-family') v = v.replace(/"/g, "'");
+        css += name + ':' + v + ';';
+      }
+      if(el.tagName === 'IMG' || isTable){
+        css += 'width:' + cs.width + ';';
+      }
+      var old = (el.getAttribute('style') || '').replace(/^;+/, '').replace(/;+$/, '');
+      el.setAttribute('style', (old ? old + ';' : '') + css);
+    }
+  }
+
+  var WIDTH = 900;
+
+  /* 办公模式：把代码块从 <div> 改写成 <table><td>。
+     OneNote / 老式邮件客户端只认表格和字体属性，块级背景和 padding 会被整块丢掉 */
+  function codeBlocksToTables(root){
+    var blocks = root.querySelectorAll('.code-block');
+    for(var i = blocks.length - 1; i >= 0; i--){
+      var block = blocks[i];
+      var langEl = block.querySelector('.code-lang');
+      var codeEl = block.querySelector('code');
+      if(!codeEl) continue;
+
+      var body = codeEl.innerHTML.replace(/\r?\n/g, '<br>');
+      // inlineStyles 会给每个 span 塞一堆 padding/border:0，OneNote 里全是噪点，只留颜色与字形
+      body = body.replace(/style="([^"]*)"/g, function(m, s){
+        var keep = [];
+        var parts = s.split(';');
+        for(var k = 0; k < parts.length; k++){
+          if(/^\s*(color|font-style|font-weight|text-decoration)\s*:/i.test(parts[k])) keep.push(parts[k].trim());
+        }
+        // OneNote 对 rgb() 支持不稳，统一转成 #rrggbb
+        var style = keep.join(';').replace(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/g, function(mm, r, g, b){
+          var h = function(n){ var v = Number(n).toString(16); return v.length < 2 ? '0' + v : v; };
+          return '#' + h(r) + h(g) + h(b);
+        });
+        return style ? 'style="' + style + ';"' : '';
+      });
+      // 连续空格会被折叠，换成 &nbsp; 保住缩进
+      body = body.replace(/ {2,}/g, function(m){
+        return new Array(m.length + 1).join('&nbsp;');
+      });
+      body = body.replace(/\t+/g, function(m){
+        return new Array(m.length * 4 + 1).join('&nbsp;');
+      });
+
+      var langHtml = '';
+      if(langEl && langEl.textContent){
+        langHtml = '<div style="font-family:Consolas,\'Courier New\',monospace;font-size:8pt;' +
+          'color:#8b949e;margin:0 0 4pt 0;line-height:1;">' + esc(langEl.textContent) + '</div>';
+      }
+
+      var td = document.createElement('td');
+      td.setAttribute('bgcolor', '#f6f8fa');           // 老式属性，OneNote 更可能识别
+      td.setAttribute('style', 'background-color:#f6f8fa;border:1px solid #d0d7de;' +
+        'padding:8pt 10pt;font-family:Consolas,\'Courier New\',monospace;font-size:10pt;' +
+        'line-height:1.45;color:#24292f;vertical-align:top;');
+      td.innerHTML = langHtml +
+        '<div style="font-family:Consolas,\'Courier New\',monospace;font-size:10pt;' +
+        'line-height:1.45;color:#24292f;">' + body + '</div>';
+
+      var tr = document.createElement('tr');
+      tr.appendChild(td);
+
+      var table = document.createElement('table');
+      table.setAttribute('cellspacing', '0');
+      table.setAttribute('cellpadding', '0');
+      table.setAttribute('border', '0');
+      table.setAttribute('style', 'border-collapse:collapse;width:100%;margin:6pt 0 10pt 0;' +
+        'font-family:Consolas,\'Courier New\',monospace;');
+      table.appendChild(tr);
+
+      if(block.parentNode) block.parentNode.replaceChild(table, block);
+    }
+  }
+
+  function buildRichHtml(withFragment){
+    var wrap = document.createElement('div');
+    wrap.setAttribute('style',
+      'position:fixed;left:-20000px;top:0;width:' + WIDTH + 'px;background:#ffffff;padding:24px;');
+    var clone = preview.cloneNode(true);
+    clone.removeAttribute('id');
+    wrap.appendChild(clone);
+    document.body.appendChild(wrap);
+    // 导出时去掉代码块上的“复制”按钮，避免粘到 Word 里多出文字
+    var cbtns = clone.querySelectorAll('.code-copy');
+    for(var ci = 0; ci < cbtns.length; ci++){
+      if(cbtns[ci].parentNode) cbtns[ci].parentNode.removeChild(cbtns[ci]);
+    }
+    inlineStyles(clone);
+    if(officeMode) codeBlocksToTables(clone);
+    // 保留外层 div：字体/字号/颜色/行高挂在这里，子元素继承
+    var inner = '<div style="' + (clone.getAttribute('style') || '') + '">' + clone.innerHTML + '</div>';
+    wrap.parentNode.removeChild(wrap);
+    return withFragment === false ? inner : '<!--StartFragment-->' + inner + '<!--EndFragment-->';
+  }
+
+  /* ---------------- 复制 / 导出 ---------------- */
+
+  function legacyCopyHtml(html){
+    var holder = document.createElement('div');
+    holder.setAttribute('style', 'position:fixed;left:-20000px;top:0;width:800px;');
+    holder.innerHTML = html;
+    document.body.appendChild(holder);
+    var range = document.createRange();
+    range.selectNodeContents(holder);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    var ok = false;
+    try{ ok = document.execCommand('copy'); }catch(e){ ok = false; }
+    sel.removeAllRanges();
+    holder.parentNode.removeChild(holder);
+    return ok;
+  }
+
+  function copyRich(){
+    if(!preview.textContent.trim()){ toast('右侧还没有内容'); return; }
+    var html = buildRichHtml();
+    var plain = preview.innerText.replace(/\n{3,}/g, '\n\n').trim();
+
+    if(navigator.clipboard && window.ClipboardItem){
+      var item;
+      try{
+        item = new ClipboardItem({
+          'text/html': new Blob([html], { type: 'text/html' }),
+          'text/plain': new Blob([plain], { type: 'text/plain' })
+        });
+      }catch(e){ item = null; }
+      if(item && navigator.clipboard.write){
+        navigator.clipboard.write([item]).then(function(){
+          toast('已复制富文本，去 Word 里 Ctrl+V 试试');
+        }).catch(function(){
+          toast(legacyCopyHtml(html) ? '已复制富文本' : '复制失败，请手动选中右侧内容 Ctrl+C');
+        });
+        return;
+      }
+    }
+    toast(legacyCopyHtml(html) ? '已复制富文本，去 Word 里 Ctrl+V 试试' : '复制失败，请手动选中右侧内容 Ctrl+C');
+  }
+
+  function copyPlain(){
+    var text = preview.innerText.replace(/\n{3,}/g, '\n\n').trim();
+    if(!text){ toast('右侧还没有内容'); return; }
+    copyRawText(text, '已复制纯文本');
+  }
+
+  /* 用选区 + execCommand 复制纯文本：浏览器与 Electron 都可靠，且带用户手势 */
+  function execCopyText(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;left:-20000px;top:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try{ ok = document.execCommand('copy'); }catch(e){ ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function fallbackPlain(text, okMsg){
+    toast(execCopyText(text) ? (okMsg || '已复制纯文本') : '复制失败，请手动选中右侧内容 Ctrl+C');
+  }
+
+  /* 复制任意纯文本（代码块的“复制”按钮用） */
+  function copyRawText(text, okMsg){
+    if(!text){ toast('没有可复制的内容'); return; }
+    if(execCopyText(text)){ toast(okMsg || '已复制'); return; }
+    if(window.appBridge){
+      window.appBridge.copyText(text).then(function(){ toast(okMsg || '已复制'); })
+        .catch(function(){ toast('复制失败'); });
+      return;
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ toast(okMsg || '已复制'); })
+        .catch(function(){ toast('复制失败'); });
+      return;
+    }
+    toast('复制失败，请手动选中内容 Ctrl+C');
+  }
+
+  function download(blob, name){
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){
+      URL.revokeObjectURL(a.href);
+      if(a.parentNode) a.parentNode.removeChild(a);
+    }, 1500);
+  }
+
+  function stamp(){
+    var d = new Date();
+    var p = function(n){ return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes());
+  }
+
+  function saveDoc(){
+    if(!preview.textContent.trim()){ toast('右侧还没有内容'); return; }
+    var body = buildRichHtml(false);
+    var head = '<html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
+      'xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+      '<head><meta charset="utf-8"><title>AI 对话</title>' +
+      '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>' +
+      '<w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->' +
+      '<style>@page{size:A4;margin:2cm}body{font-family:"Microsoft YaHei",sans-serif;font-size:11pt;line-height:1.65}' +
+      'table{border-collapse:collapse}td,th{border:1px solid #bfc5cc;padding:5pt 8pt}</style></head><body>';
+    var doc = head + body + '</body></html>';
+    download(new Blob(['\ufeff' + doc], { type: 'application/msword' }), 'AI对话_' + stamp() + '.doc');
+    toast('已保存，Word 若提示格式不符选「是」即可打开');
+  }
+
+  function saveImage(){
+    if(!preview.textContent.trim()){ toast('右侧还没有内容'); return; }
+    var body = buildRichHtml(false);
+    var holder = document.createElement('div');
+    holder.innerHTML = body;
+    var xhtml = new XMLSerializer().serializeToString(holder);
+
+    var wrapW = WIDTH + 48;
+    var measure = document.createElement('div');
+    measure.setAttribute('style',
+      'position:fixed;left:-20000px;top:0;width:' + WIDTH + 'px;font-size:15px;line-height:1.78;' +
+      'font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#fff;');
+    measure.innerHTML = body;
+    document.body.appendChild(measure);
+    var contentH = Math.ceil(measure.getBoundingClientRect().height);
+    document.body.removeChild(measure);
+
+    if(!contentH || contentH < 10){ toast('内容高度异常，无法导出图片'); return; }
+    if(contentH > 12000){
+      toast('内容太长（超过 1.2 万像素），建议改用「存为 Word」');
+      return;
+    }
+
+    var pad = 24;
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + wrapW + '" height="' + (contentH + pad * 2) + '">' +
+      '<rect width="100%" height="100%" fill="#ffffff"/>' +
+      '<foreignObject x="' + pad + '" y="' + pad + '" width="' + WIDTH + '" height="' + contentH + '">' +
+      xhtml +
+      '</foreignObject></svg>';
+
+    var url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    var img = new Image();
+    img.onload = function(){
+      try{
+        var scale = 2;
+        var canvas = document.createElement('canvas');
+        canvas.width = wrapW * scale;
+        canvas.height = (contentH + pad * 2) * scale;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(function(b){
+          if(!b){ toast('图片生成失败，请改用「存为 Word」'); return; }
+          download(b, 'AI对话_' + stamp() + '.png');
+          toast('已保存为图片，可直接发微信');
+        }, 'image/png');
+      }catch(e){
+        toast('图片生成失败：' + e.message);
+      }
+    };
+    img.onerror = function(){ toast('图片生成失败，请改用「存为 Word」'); };
+    img.src = url;
+  }
+
+  function readClipboard(){
+    if(navigator.clipboard && navigator.clipboard.readText){
+      navigator.clipboard.readText().then(function(text){
+        if(!text){ toast('剪贴板里没有文字'); return; }
+        src.value = text;
+        update();
+        toast('已读取 ' + text.length + ' 个字符');
+      }).catch(function(){
+        toast('浏览器拒绝了读取权限，请在左侧直接 Ctrl+V');
+        src.focus();
+      });
+    } else {
+      toast('当前浏览器不支持自动读取，请在左侧直接 Ctrl+V');
+      src.focus();
+    }
+  }
+
+  /* ---------------- 绑定 ---------------- */
+
+  var timer = null;
+  function update(){
+    var md = src.value || '';
+    preview.innerHTML = renderMarkdown(md);
+    var hint = document.getElementById('emptyHint');
+    if(hint) hint.style.display = md.trim() ? 'none' : 'block';
+  }
+  function scheduleUpdate(){
+    clearTimeout(timer);
+    timer = setTimeout(update, 110);
+  }
+
+  src.addEventListener('input', scheduleUpdate);
+  src.addEventListener('paste', function(){ setTimeout(update, 0); });
+
+  /* 办公模式开关 */
+  var officeChk = document.getElementById('officeMode');
+  if(officeChk){
+    officeChk.checked = officeMode;
+    if(officeMode) preview.classList.add('code-light');
+    officeChk.addEventListener('change', function(){
+      officeMode = officeChk.checked;
+      if(officeMode) preview.classList.add('code-light');
+      else preview.classList.remove('code-light');
+      try{ window.localStorage.setItem('aick_office', officeMode ? '1' : '0'); }catch(e){}
+      toast(officeMode
+        ? '已切浅色代码块：复制后可粘到 OneNote'
+        : '已切回深色代码块：适合 Word / 存图');
+    });
+  }
+
+  /* 代码块右上角“复制”按钮（事件委托，渲染后无需重新绑定） */
+  preview.addEventListener('click', function(e){
+    var btn = (e.target && e.target.closest) ? e.target.closest('.code-copy') : null;
+    if(!btn) return;
+    var block = btn.closest('.code-block');
+    var codeEl = block ? block.querySelector('code') : null;
+    if(codeEl) copyRawText(codeEl.textContent, '已复制代码');
+  });
+
+  document.getElementById('btnCopyRich').addEventListener('click', copyRich);
+  document.getElementById('btnCopyText').addEventListener('click', copyPlain);
+  document.getElementById('btnDoc').addEventListener('click', saveDoc);
+  document.getElementById('btnImg').addEventListener('click', saveImage);
+  document.getElementById('btnPaste').addEventListener('click', readClipboard);
+  document.getElementById('btnClear').addEventListener('click', function(){
+    src.value = '';
+    preview.innerHTML = '';
+    src.focus();
+    toast('已清空');
+  });
+
+  document.addEventListener('keydown', function(e){
+    if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+      e.preventDefault();
+      copyRich();
+    }
+  });
+
+  update();
+})();
+</script>
+</body>
+</html>
