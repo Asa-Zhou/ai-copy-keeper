@@ -111,9 +111,18 @@ npm install --registry=https://registry.npmmirror.com
 
 ---
 
-## 遗留目录
+## 遗留目录 out/ out2/ release/
 
-顶层可能还残留 `out/`、`out2/`、`release/` 三个目录，是早期打包留下的空壳。
-里面的 `app.asar` 已清空为 **0 字节**，但文件句柄仍被占用，命令行删不掉
-（`WinError 32 另一个程序正在使用此文件`）。已加入 `.gitignore`，不影响任何功能；
-在资源管理器里右键删除即可，若提示被占用则重启后再删。
+早期打包留下的空壳。里面的 `app.asar` 已清空为 **0 字节**，但文件句柄被 **WorkBuddy 进程**
+（AI 工具本身）持有，且打开时没有带 `FILE_SHARE_DELETE`，于是一路连锁失败：
+
+| 操作 | 结果 |
+| --- | --- |
+| 重命名 / 移动 | `WinError 32 另一个程序正在使用此文件` |
+| 删除 | 移入回收站失败（移动 = 重命名）→ 安全策略 fail-closed，拒绝降级为永久删除 |
+| 写入 / 截断 | 成功（句柄允许写共享） |
+
+**退出 WorkBuddy（或重启电脑）后句柄释放，这些目录就能正常删除。**
+
+排查方法（Windows 自带，无需第三方工具）：用 Restart Manager API
+（`RmStartSession` → `RmRegisterResources` → `RmGetList`）可直接列占用某文件的进程 PID 与名称。
