@@ -113,6 +113,7 @@ npm install --registry=https://registry.npmmirror.com
 
 ## 遗留目录
 
-顶层可能还残留 `out/`、`out2/`、`release/` 三个目录，是早期打包留下的空壳
-（里面的 `app.asar` 被系统句柄锁定，命令行删不掉）。已加入 `.gitignore`，
-不影响任何功能，在资源管理器里右键删除即可。
+顶层可能还残留 `out/`、`out2/`、`release/` 三个目录，是早期打包留下的空壳。
+里面的 `app.asar` 已清空为 **0 字节**，但文件句柄仍被占用，命令行删不掉
+（`WinError 32 另一个程序正在使用此文件`）。已加入 `.gitignore`，不影响任何功能；
+在资源管理器里右键删除即可，若提示被占用则重启后再删。
