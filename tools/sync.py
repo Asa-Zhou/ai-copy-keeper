@@ -35,7 +35,7 @@ pairs.append((
     u'    if(navigator.clipboard && window.ClipboardItem){',
     u'    var html = buildRichHtml(false);\n'
     u'    var plain = preview.innerText.replace(/\\n{3,}/g, \'\\n\\n\').trim();\n\n'
-    u'    // 1) 选区复制：浏览器与 Electron 都实测可靠（Chromium 会生成标准 CF_HTML）\n'
+    u'    // 1) 选区复制：Chromium 会生成标准 CF_HTML，浏览器与 Electron 通用\n'
     u'    if(legacyCopyHtml(html)){\n'
     u'      toast(\'已复制富文本，去 Word 里 Ctrl+V 试试\');\n'
     u'      return;\n'

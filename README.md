@@ -60,7 +60,7 @@
 | `electron/main.js`、`preload.js` | `node_modules/` |
 | `electron/package.json`、`package-lock.json` | `dist/`、`*.exe`（96MB，产物） |
 | `electron/resources/*.png` | `out*/`、`release*/`（打包输出目录） |
-| `tools/*.py` | `.workbuddy/`（本地工具缓存） |
+| `tools/*.py` | `.vscode/`、`__pycache__/`（编辑器与 Python 缓存） |
 | `.gitignore`、`README.md` | |
 
 ---

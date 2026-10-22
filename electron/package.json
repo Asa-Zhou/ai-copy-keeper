@@ -10,7 +10,7 @@
     "dist": "electron-builder --win portable"
   },
   "build": {
-    "appId": "com.local.aicopykeeper",
+    "appId": "com.asazhou.aicopykeeper",
     "productName": "AI Copy Keeper",
     "directories": {
       "output": "../dist",

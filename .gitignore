@@ -14,7 +14,6 @@ node_modules/
 electron/index.html
 
 # ---------- 工具与系统 ----------
-.workbuddy/
 __pycache__/
 *.pyc
 Thumbs.db

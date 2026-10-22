@@ -380,7 +380,7 @@
           i = sub[1];
         }
       } else if(/^[ \t]*(`{3,}|~{3,})/.test(l)){
-        /* 列表项内缩进的代码块（AI 回复里极常见，之前被当续行吞掉了） */
+        /* 列表项内缩进的代码块：按围栏缩进量剥离缩进后渲染 */
         var fm = l.match(/^([ \t]*)(`{3,}|~{3,})([\s\S]*)$/);
         var fIndent = fm[1].replace(/\t/g, '    ').length;
         var fChar = fm[2].charAt(0);
