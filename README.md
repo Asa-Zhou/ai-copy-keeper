@@ -1,5 +1,9 @@
 # AI 对话格式复制工具
 
+[![Release](https://img.shields.io/github/v/release/Asa-Zhou/ai-copy-keeper?label=release)](https://github.com/Asa-Zhou/ai-copy-keeper/releases/latest)
+[![Download](https://img.shields.io/badge/download-exe-blue)](https://github.com/Asa-Zhou/ai-copy-keeper/releases/latest/download/AI-Copy-Keeper.exe)
+[![License](https://img.shields.io/github/license/Asa-Zhou/ai-copy-keeper)](LICENSE)
+
 把 AI 网页里复制出来的 Markdown 源码（`###`、`**加粗**`、`| 表格 |`、` ```bash `）
 还原成**带格式的富文本**，粘到 Word / 邮件 / 腾讯文档 / 飞书 / 语雀 / OneNote 时
 保留标题层级、表格、代码块、加粗、引用。
