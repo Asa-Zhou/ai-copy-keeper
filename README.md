@@ -59,8 +59,8 @@
 | `src/index.html` | `electron/index.html`（生成物） |
 | `electron/main.js`、`preload.js` | `node_modules/` |
 | `electron/package.json`、`package-lock.json` | `dist/`、`*.exe`（96MB，产物） |
-| `electron/resources/*.png` | `out/`、`out2/`、`release/`（早期打包残留） |
-| `tools/*.py` | `.workbuddy/`（AI 会话记忆，非项目内容） |
+| `electron/resources/*.png` | `out*/`、`release*/`（打包输出目录） |
+| `tools/*.py` | `.workbuddy/`（本地工具缓存） |
 | `.gitignore`、`README.md` | |
 
 ---
@@ -112,21 +112,3 @@ npm install --registry=https://registry.npmmirror.com
 | 粘到 OneNote 代码块变白底黑字 | OneNote 不认块级背景色 → 勾选底部「代码块用浅色」，代码块会输出成浅色表格 |
 | exe 首次运行有 SmartScreen 提示 | 未签名，点「更多信息 → 仍要运行」 |
 | 体积 96MB | Electron 自带 Chromium，其中业务代码只有约 50KB |
-
----
-
-## 遗留目录 out/ out2/ release/
-
-早期打包留下的空壳。里面的 `app.asar` 已清空为 **0 字节**，但文件句柄被 **WorkBuddy 进程**
-（AI 工具本身）持有，且打开时没有带 `FILE_SHARE_DELETE`，于是一路连锁失败：
-
-| 操作 | 结果 |
-| --- | --- |
-| 重命名 / 移动 | `WinError 32 另一个程序正在使用此文件` |
-| 删除 | 移入回收站失败（移动 = 重命名）→ 安全策略 fail-closed，拒绝降级为永久删除 |
-| 写入 / 截断 | 成功（句柄允许写共享） |
-
-**退出 WorkBuddy（或重启电脑）后句柄释放，这些目录就能正常删除。**
-
-排查方法（Windows 自带，无需第三方工具）：用 Restart Manager API
-（`RmStartSession` → `RmRegisterResources` → `RmGetList`）可直接列占用某文件的进程 PID 与名称。
